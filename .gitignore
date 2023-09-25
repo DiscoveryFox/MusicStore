@@ -1,3 +1,8 @@
 .fleet/
 __pycache__/
 VENV3.11.1/
+.idea/
+tmp/
+appmap.yml
+.env
+database.db

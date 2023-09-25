@@ -3,31 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}My Flask App{% endblock %}</title>
-    <!-- Add your CSS links, meta tags, and other head content here -->
+    {% block head %}
+    <!-- Add your head content here, such as CSS links, meta tags, etc. -->
+    {% endblock %}
 </head>
 <body>
-    <!-- Navigation bar or any other common elements can go here -->
-    <nav>
-        <ul>
-            <li><a href="/">Home</a></li>
-            <li><a href="/about">About</a></li>
-            <!-- Add more navigation links as needed -->
-        </ul>
-    </nav>
+    <!-- Add your navigation menu or other common content here -->
 
-    <!-- Main content of the child templates will go here -->
-    <div class="container">
-        {% block content %}
-        <!-- Child templates will override this block -->
-        {% endblock %}
-    </div>
+    {% block body %}
+    <!-- The body block where child templates will insert their content -->
+    {% endblock %}
 
-    <!-- Footer or any other common elements can go here -->
-    <footer>
-        &copy; {{ year|default(current_year) }} My Flask App
-    </footer>
-
-    <!-- Add your JavaScript links and scripts here -->
+    <!-- Add your footer or other common content here -->
 </body>
 </html>
