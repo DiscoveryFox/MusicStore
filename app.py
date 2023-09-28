@@ -1,12 +1,14 @@
 import flask
 from models import db  # Import the SQLAlchemy db object
-from models import User, Orchestra, OrchestraMembership
+from models import User, Orchestra
 from flask_bcrypt import Bcrypt
 
 app = flask.Flask(__name__)
 app.config[
     "SQLALCHEMY_DATABASE_URI"
 ] = r"sqlite:///C:\Users\Flinn\OneDrive\Dokumente\MusicStore\database.db"
+
+app.secret_key = "This is some super secret form of a key"
 
 db.init_app(app)
 bcrypt = Bcrypt(app)
@@ -38,7 +40,7 @@ def register():
         db.session.commit()
 
         flask.flash("Registration successful. You can now log in.", "success")
-        return flask.redirect(url_for("login"))
+        return flask.redirect(flask.url_for("login"))
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -63,6 +65,12 @@ def login():
 def profile():
     # Implement your profile view here
     return "User Profile"
+
+
+@app.route("/create_table")
+def create_table_on_flask():
+    db.create_all()
+    return "Ok", 202
 
 
 if __name__ == "__main__":
