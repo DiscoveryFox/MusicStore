@@ -23,6 +23,8 @@ class User(db.Model):
     twofa_secret = db.Column(db.String(120))
     reset_tokens = db.relationship("PasswordResetToken", backref="user", lazy=True)
 
+    email_confirmed = db.Column(db.Boolean, default=False)
+
     verification_tokens = db.relationship(
         "VerificationToken", backref="user", lazy=True
     )
@@ -70,13 +72,20 @@ class PasswordResetToken(db.Model):
         self.expiration_date = expiration_date
 
 
-def join_orchestra(user_id, group_id):
+def join_orchestra(user_id: int, group_id: int):
+    """
+
+    :param user_id:
+    :param group_id:
+    :return: Returns True if the user has joined the orchestra, False if user failed to join the
+    orchestra. Either the orchestra or the user doesn't exist then.
+    """
     user = User.query.get(user_id)
     group = Group.query.get(group_id)
 
     if user and group:
         user.groups.append(group)
         db.session.commit()
-        return jsonify({"message": "User joined the orchestra successfully"})
+        return True
     else:
-        return jsonify({"error": "User or group not found"})
+        return False

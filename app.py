@@ -1,15 +1,32 @@
+import os
+
+import dotenv
 import flask
-from models import db  # Import the SQLAlchemy db object
-from models import User, Orchestra
 from flask_bcrypt import Bcrypt
+
+from tools.models import User
+from tools.models import db  # Import the SQLAlchemy db object
+from tools.verification_mail import EmailVerificator
+
+dotenv.load_dotenv()
 
 app = flask.Flask(__name__)
 app.config[
     "SQLALCHEMY_DATABASE_URI"
 ] = r"sqlite:///C:\Users\Flinn\OneDrive\Dokumente\MusicStore\database.db"
 
-app.secret_key = "This is some super secret form of a key"
 
+app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER")
+app.config["MAIL_PORT"] = os.getenv("MAIL_PORT")
+app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
+app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
+app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS")
+app.config["MAIL_USE_SSL"] = os.getenv("MAIL_USE_SSL")
+
+
+app.secret_key = os.getenv("APP_SECRET_KEY")
+
+verificator = EmailVerificator(app)
 db.init_app(app)
 bcrypt = Bcrypt(app)
 
@@ -19,6 +36,7 @@ def index():
     return flask.render_template("index.html")
 
 
+# 245 413
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if flask.request.method == "POST":
