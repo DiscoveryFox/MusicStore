@@ -6,3 +6,4 @@ tmp/
 appmap.yml
 .env
 database.db
+VENV/
