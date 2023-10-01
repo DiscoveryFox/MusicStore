@@ -1,7 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
-from sqlalchemy import Column, Integer, String, ForeignKey
+from sqlalchemy import Integer, String
 from sqlalchemy.orm import relationship
-from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -37,6 +36,9 @@ class Orchestra(db.Model):
     id = db.Column(Integer, primary_key=True)
     name = db.Column(String, nullable=False)
 
+    description = db.Column(String)
+    profile_picture = db.Column(String)
+
     members = relationship(
         "User",
         secondary=user_orchestra_association,
@@ -66,3 +68,15 @@ class PasswordResetToken(db.Model):
         self.token = token
         self.user_id = user_id
         self.expiration_date = expiration_date
+
+
+def join_orchestra(user_id, group_id):
+    user = User.query.get(user_id)
+    group = Group.query.get(group_id)
+
+    if user and group:
+        user.groups.append(group)
+        db.session.commit()
+        return jsonify({"message": "User joined the orchestra successfully"})
+    else:
+        return jsonify({"error": "User or group not found"})
