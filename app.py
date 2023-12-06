@@ -2,8 +2,13 @@ import os
 
 import dotenv
 import flask
+import flask_login
+from flask import send_file
 from flask_bcrypt import Bcrypt
+from flask_login import current_user
+from flask_migrate import Migrate
 
+import tools.file_orchestrator
 from tools.models import User
 from tools.models import db  # Import the SQLAlchemy db object
 from tools.verification_mail import EmailVerificator
@@ -23,20 +28,40 @@ app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
 app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS")
 app.config["MAIL_USE_SSL"] = os.getenv("MAIL_USE_SSL")
 
+login_manager = flask_login.LoginManager()
 
 app.secret_key = os.getenv("APP_SECRET_KEY")
 
 verificator = EmailVerificator(app)
+login_manager.init_app(app)
 db.init_app(app)
 bcrypt = Bcrypt(app)
 
 
+migrate = Migrate(app, db)
+
+orchestrator = tools.file_orchestrator.FileOrchestrator()
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.get(user_id)
+
+
 @app.route("/")
 def index():
-    return flask.render_template("index.html")
+    return flask.render_template(
+        "index.html", ids=orchestrator.get_user_pieces(user=current_user)
+    )
 
 
-# 245 413
+@app.route("/piece", methods=["GET"])
+def get_piece():
+    piece_id: int = int(flask.request.args.get("piece_id"))
+    piece_image = orchestrator.get_piece_image(piece_id)
+    return send_file(piece_image, mimetype="image/png")
+
+
 @app.route("/register", methods=["GET", "POST"])
 def register():
     if flask.request.method == "POST":
