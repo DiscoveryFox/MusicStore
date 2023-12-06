@@ -1,3 +1,4 @@
+import flask_login
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import relationship
@@ -11,7 +12,7 @@ user_orchestra_association = db.Table(
 )
 
 
-class User(db.Model):
+class User(db.Model, flask_login.UserMixin):
     id = db.Column(Integer, primary_key=True)
     full_name = db.Column(String)
     username = db.Column(String)
@@ -70,6 +71,64 @@ class PasswordResetToken(db.Model):
         self.token = token
         self.user_id = user_id
         self.expiration_date = expiration_date
+
+
+class MusicalPiece(db.Model):
+    id = db.Column(Integer, primary_key=True)
+    name = db.Column(String, nullable=False)
+    composer = db.Column(String, nullable=True)
+    genre = db.Column(String, nullable=True)
+    file_path = db.Column(String, nullable=False)
+
+
+# todo: this code still needs to be reviewed. Generated with ai. Could be wrong.
+""" 
+def add_piece(name: str, composer: str, genre: str, files: dict):
+    \"\"\"
+    This function would add the piece to the database and move the individual files to the corresponding folders.
+
+    :param name: The name of the musical piece
+    :param composer: The composer of the musical piece
+    :param genre: The genre of the musical piece
+    :param files: A dict containing the paths of the individual instrument files.
+                  The key is the instrument name and the value is the corresponding file path.
+
+    For example:
+    files = {
+        "trumpet_b": "/path_to_file/1_trumpet_b",
+        "tuba_c": "/path_to_file/1_tuba_c"
+    }
+    \"\"\"
+    piece = MusicalPiece(name=name, composer=composer, genre=genre, file_path="")
+    db.session.add(piece)
+    db.session.commit()  # The piece is now added to the database, and it has been assigned a unique id.
+
+    # The storage directory where the files would be moved to.
+    directory_path = f"storage/{piece.id}"
+
+    # Create the directory if it doesn't exist
+    if not os.path.exists(directory_path):
+        os.makedirs(directory_path)
+
+    for instrument_name, file_path in files.items():
+        # Move the file to the directory
+        shutil.move(
+            file_path, os.path.join(directory_path, f"{piece.id}_{instrument_name}")
+        )
+
+    # Update the file_path column with the correct directory path.
+    piece.file_path = directory_path
+    db.session.commit()
+
+"""
+
+
+def getFilePath(piece_id: int) -> str:
+    piece = MusicalPiece.query.get(piece_id)
+    if piece:
+        return piece.file_path
+    else:
+        return None
 
 
 def join_orchestra(user_id: int, group_id: int):
