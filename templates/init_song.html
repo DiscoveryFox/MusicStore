@@ -1,0 +1,37 @@
+{% extends 'base.html' %}
+
+{% block head %}
+    <title>Song Settings</title>
+{% endblock %}
+
+{% block body %}
+    <form method=post enctype=multipart/form-data>
+        <label>
+            <p>Song title: </p>
+            <input type="text" value="{{ song_title }}">
+            <input type="checkbox" id="automatic_id" name="automatic_id" checked>
+
+            <!-- Your existing input -->
+            <input type="number" id="piece_id" name="piece_id" min="1" value="{{ automatic_id }}" required disabled>
+
+            <script>
+                $(document).ready(function () {
+                    // Save the default value
+                    var defaultValue = $('#piece_id').val();
+
+                    // Listen for click on the checkbox
+                    $('#automatic_id').change(function () {
+                        if ($(this).is(':checked')) {
+                            // Checkbox is checked, disable input and set the default value
+                            $('#piece_id').prop('disabled', true);
+                            $('#piece_id').val(defaultValue);
+                        } else {
+                            // Checkbox is not checked, enable the input
+                            $('#piece_id').prop('disabled', false);
+                        }
+                    });
+                });
+            </script>
+        </label>
+    </form>
+{% endblock %}
