@@ -3,10 +3,11 @@ import os
 import dotenv
 import flask
 import flask_login
-from flask import send_file
+from flask import send_file, request, url_for
 from flask_bcrypt import Bcrypt
 from flask_login import current_user
 from flask_migrate import Migrate
+from werkzeug.utils import secure_filename
 
 import tools.file_orchestrator
 from tools.models import User
@@ -27,6 +28,8 @@ app.config["MAIL_USERNAME"] = os.getenv("MAIL_USERNAME")
 app.config["MAIL_PASSWORD"] = os.getenv("MAIL_PASSWORD")
 app.config["MAIL_USE_TLS"] = os.getenv("MAIL_USE_TLS")
 app.config["MAIL_USE_SSL"] = os.getenv("MAIL_USE_SSL")
+
+app.config["STORAGE_PATH"] = os.getenv("STORAGE_PATH")
 
 login_manager = flask_login.LoginManager()
 
@@ -53,6 +56,48 @@ def index():
     return flask.render_template(
         "index.html", ids=orchestrator.get_user_pieces(user=current_user)
     )
+
+
+def allowed_file(filename: str):
+    print(filename)
+    return True
+
+
+@app.route("/upload_file", methods=["POST", "Get"])
+def upload_file():
+    if request.method == "POST":
+        # check if the post request has the file part
+        if "file" not in request.files:
+            flash("No file part")
+            return redirect(request.url)
+
+        files = request.files.to_dict(flat=False)
+        piece_id = str(
+            request.form.get("piece_id")
+            if request.form.get("piece_id")
+            else orchestrator.get_automatic_next_id()
+        )
+        # TODO: This is an AI Feature for name detection. You need to be able to disable this. But this is a very cool feature.
+        # song_name = tools.name_specificator.get_song_name(files.get("file")[0].filename)
+        song_name = files.get("file")[0].filename
+        os.mkdir(os.path.join(app.config["STORAGE_PATH"], piece_id))
+
+        # TODO: Add temporary storage for the files. The files should be saved in the right directory on submit in the
+        # init song.html form
+        for file in files.get("file"):
+            if file:
+                filename = secure_filename(file.filename)
+                file.save(
+                    os.path.join(
+                        app.config["STORAGE_PATH"], os.path.join(piece_id, filename)
+                    )
+                )
+
+        return flask.render_template("init_song.html", song_title=song_name)
+    elif request.method == "GET":
+        return flask.render_template(
+            "upload_file.html", automatic_id=orchestrator.get_automatic_next_id()
+        )
 
 
 @app.route("/piece", methods=["GET"])
