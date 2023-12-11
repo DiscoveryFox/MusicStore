@@ -27,3 +27,6 @@ class FileOrchestrator:
 
             # Assuming we just want the first image
             return images[0] if images else None
+
+    def get_automatic_next_id(self):
+        return 3
