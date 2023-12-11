@@ -1,17 +1,18 @@
 import os
+import tempfile
 
 import dotenv
 import flask
 import flask_login
-from flask import send_file, request, url_for
+from flask import request, send_file, url_for
 from flask_bcrypt import Bcrypt
 from flask_login import current_user
 from flask_migrate import Migrate
 from werkzeug.utils import secure_filename
 
 import tools.file_orchestrator
-from tools.models import User
 from tools.models import db  # Import the SQLAlchemy db object
+from tools.models import User, TemporaryDirectory
 from tools.verification_mail import EmailVerificator
 
 dotenv.load_dotenv()
@@ -80,20 +81,24 @@ def upload_file():
         # TODO: This is an AI Feature for name detection. You need to be able to disable this. But this is a very cool feature.
         # song_name = tools.name_specificator.get_song_name(files.get("file")[0].filename)
         song_name = files.get("file")[0].filename
-        os.mkdir(os.path.join(app.config["STORAGE_PATH"], piece_id))
+        # os.mkdir(os.path.join(app.config["STORAGE_PATH"], piece_id))
 
         # TODO: Add temporary storage for the files. The files should be saved in the right directory on submit in the
         # init song.html form
-        for file in files.get("file"):
-            if file:
-                filename = secure_filename(file.filename)
-                file.save(
-                    os.path.join(
-                        app.config["STORAGE_PATH"], os.path.join(piece_id, filename)
-                    )
-                )
+        print('Starting tempdir')
+        with TemporaryDirectory(delete=False) as tmpdirpath:
+            print("created temporary directory", tmpdirpath)
 
-        return flask.render_template("init_song.html", song_title=song_name)
+            for file in files.get("file"):
+                if file:
+                    filename = secure_filename(file.filename)
+                    file.save(os.path.join(tmpdirpath, filename))
+
+        return flask.render_template(
+            "init_song.html",
+            song_title=song_name,
+            automatic_id=orchestrator.get_automatic_next_id(),
+        )
     elif request.method == "GET":
         return flask.render_template(
             "upload_file.html", automatic_id=orchestrator.get_automatic_next_id()

@@ -1,7 +1,12 @@
+import os
+import shutil
+import uuid
+
 import flask_login
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import relationship
+from sqlalchemy.dialects.postgresql import UUID
 
 db = SQLAlchemy()
 
@@ -81,6 +86,9 @@ class MusicalPiece(db.Model):
     file_path = db.Column(String, nullable=False)
 
 
+class TemporaryLocation(db.Model):
+    id = db.Column(String, primary_key=True, nullable=False)
+    path = db.Column(String, nullable=False)
 # todo: this code still needs to be reviewed. Generated with ai. Could be wrong.
 """ 
 def add_piece(name: str, composer: str, genre: str, files: dict):
@@ -148,3 +156,23 @@ def join_orchestra(user_id: int, group_id: int):
         return True
     else:
         return False
+
+
+class TemporaryDirectory:
+    def __init__(self, delete: bool = True):
+        self.delete = delete
+
+        self.folder_name = uuid.uuid4().hex
+        self.path = f"/tmp/{self.folder_name}"
+
+        os.mkdir(path=self.path)
+
+    def cleanup(self):
+        shutil.rmtree(self.path)
+
+    def __enter__(self):
+        return self.path
+
+    def __exit__(self, *args, **kwargs):
+        if delete:
+            self.cleanup()
