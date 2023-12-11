@@ -1,31 +1,13 @@
 {% extends 'base.html' %}
 
 {% block head %}
-<title>This is a title.</title>
+    <title>This is a title.</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+
 {% endblock %}
 
 {% block body %}
-    <!-- We assume that 'groups' is a list of group objects passed in as a context variable. -->
-    <!-- Each group object has a 'name' property and a 'pieces' property. -->
-    <!-- Each piece object has an 'image' property and a 'description' property. -->
-
-    <!-- Display group names with option to select -->
-    <select>
-        {% for group in groups %}
-            <option>{{ group.name }}</option>
-        {% endfor %}
-    </select>
-
-    <!-- Display pieces in a group -->
-    {% for group in groups %}
-        <div class='group' id={{ group.name }}>
-            {% for piece in group.pieces %}
-                <div class='card'>
-                    <!-- We assume that 'piece.image' is the URL of the image. -->
-                    <img src="{{ piece.image }}" alt="{{ piece.description }}">
-                    <p>{{ piece.description }}</p>
-                </div>
-            {% endfor %}
-        </div>
-    {% endfor %}
+    <a href="/upload_file" class="btn btn-primary my-button">
+        <span class="fa fa-plus"></span> Add Song
+    </a>
 {% endblock %}
