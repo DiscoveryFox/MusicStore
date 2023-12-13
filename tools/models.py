@@ -6,7 +6,6 @@ import flask_login
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import Integer, String
 from sqlalchemy.orm import relationship
-from sqlalchemy.dialects.postgresql import UUID
 
 db = SQLAlchemy()
 
@@ -89,6 +88,8 @@ class MusicalPiece(db.Model):
 class TemporaryLocation(db.Model):
     id = db.Column(String, primary_key=True, nullable=False)
     path = db.Column(String, nullable=False)
+
+
 # todo: this code still needs to be reviewed. Generated with ai. Could be wrong.
 """ 
 def add_piece(name: str, composer: str, genre: str, files: dict):
@@ -174,5 +175,5 @@ class TemporaryDirectory:
         return self.path
 
     def __exit__(self, *args, **kwargs):
-        if delete:
+        if self.delete:
             self.cleanup()
