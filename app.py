@@ -1,5 +1,4 @@
 import os
-import tempfile
 
 import dotenv
 import flask
@@ -11,8 +10,8 @@ from flask_migrate import Migrate
 from werkzeug.utils import secure_filename
 
 import tools.file_orchestrator
-from tools.models import db  # Import the SQLAlchemy db object
 from tools.models import User, TemporaryDirectory
+from tools.models import db  # Import the SQLAlchemy db object
 from tools.verification_mail import EmailVerificator
 
 dotenv.load_dotenv()
@@ -85,7 +84,7 @@ def upload_file():
 
         # TODO: Add temporary storage for the files. The files should be saved in the right directory on submit in the
         # init song.html form
-        print('Starting tempdir')
+        print("Starting tempdir")
         with TemporaryDirectory(delete=False) as tmpdirpath:
             print("created temporary directory", tmpdirpath)
 
