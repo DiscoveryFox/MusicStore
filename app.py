@@ -9,6 +9,7 @@ from flask_login import current_user
 from flask_migrate import Migrate
 from werkzeug.utils import secure_filename
 
+import tools.ai_functionality
 import tools.file_orchestrator
 from tools.models import User, TemporaryDirectory
 from tools.models import db  # Import the SQLAlchemy db object
@@ -78,7 +79,9 @@ def upload_file():
             else orchestrator.get_automatic_next_id()
         )
         # TODO: This is an AI Feature for name detection. You need to be able to disable this. But this is a very cool feature.
-        # song_name = tools.name_specificator.get_song_name(files.get("file")[0].filename)
+        # song_name = tools.ai_functionality.get_song_name_from_content(
+        #     files.get("file")[0].stream.read()
+        # )
         song_name = files.get("file")[0].filename
         # os.mkdir(os.path.join(app.config["STORAGE_PATH"], piece_id))
 
