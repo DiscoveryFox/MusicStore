@@ -31,7 +31,11 @@ def extract_instruments_from_pdf_raw_response(filepath: str) -> str:
     return "Trumpet"
 
 
-def extract_instruments(filepath: str) -> str:
+def extract_instruments(filename: str) -> str:
+    ...
+
+
+def extract_instruments_from_content(content: str) -> str:
     client = OpenAI(
         api_key=os.getenv("OPENAI_API_KEY"),
     )
@@ -40,9 +44,9 @@ def extract_instruments(filepath: str) -> str:
         messages=[
             {
                 "role": "system",
-                "content": "Please extract the instrument based on this answer. Only return the name of the instrument. No more text.",
+                "content": "Please extract the instrument based on this answer. Only return the name of the instrument. No more text. If there are more than one instrument mentioned return 'Multiple Instruments'",
             },
-            {"role": "user", "content": filepath},
+            {"role": "user", "content": content},
         ],
     )
     return completion.choices[0].message.content
