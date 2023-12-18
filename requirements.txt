@@ -5,3 +5,4 @@ flask-bcrypt
 flask-migrate
 pdf2image
 flask-mail
+pypdf
