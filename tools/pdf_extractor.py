@@ -1,8 +1,4 @@
-import sys
-
 import pypdf
-
-import ai_functionality
 
 
 def extract_text_from_pdf(pdf_path: str, ai_ready: bool = True) -> str:
@@ -36,20 +32,3 @@ def extract_text_from_pdf(pdf_path: str, ai_ready: bool = True) -> str:
 
     except Exception as e:
         return f"Error: {str(e)}"
-
-
-if __name__ == "__main__":
-    # Check if a PDF file path is provided as an argument
-    if len(sys.argv) != 2:
-        print("Usage: python extract_text_from_pdf.py <path_to_pdf>")
-        sys.exit(1)
-
-    pdf_path = sys.argv[1]
-
-    # Extract text from the PDF file
-    extracted_text = extract_text_from_pdf(pdf_path)
-
-    # Print the extracted text
-    print(extracted_text[0:2300])
-    response = ai_functionality.extract_instruments(extracted_text[0:2300])
-    print(response)
