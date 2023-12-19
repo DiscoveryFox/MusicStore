@@ -6,3 +6,4 @@ flask-migrate
 pdf2image
 flask-mail
 pypdf
+openai

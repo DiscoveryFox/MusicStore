@@ -3,7 +3,7 @@ import os
 import dotenv
 import flask
 import flask_login
-from flask import request, send_file, url_for
+from flask import request, send_file, url_for, flash, redirect
 from flask_bcrypt import Bcrypt
 from flask_login import current_user
 from flask_migrate import Migrate
@@ -93,6 +93,7 @@ def upload_file():
         print('Starting tempdir')
         with TemporaryDirectory(delete=False) as tmpdir:
             print("created temporary directory", tmpdir.path)
+            print(tmpdir.id)
 
             for file in files.get("file"):
                 if file:
@@ -106,16 +107,20 @@ def upload_file():
                     print('-------')
                     location = TemporaryLocation(id=tmpdir.id, path=tmpdir.path)
 
-        return flask.render_template(
-            "init_song.html",
-            song_title=song_name,
-            automatic_id=orchestrator.get_automatic_next_id(),
-        )
+            return flask.render_template(
+                "init_song.html",
+                song_title=song_name,
+                automatic_id=orchestrator.get_automatic_next_id(),
+                stored_id=tmpdir.id
+            )
     elif request.method == "GET":
         return flask.render_template(
             "upload_file.html", automatic_id=orchestrator.get_automatic_next_id()
         )
 
+@app.route('/finish_setup', methods=['POST'])
+def finish_setup():
+    data = request.json
 
 @app.route("/piece", methods=["GET"])
 def get_piece():
