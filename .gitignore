@@ -7,3 +7,4 @@ appmap.yml
 .env
 database.db
 VENV/
+migrations/
