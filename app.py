@@ -13,6 +13,7 @@ import tools.ai_functionality
 import tools.file_orchestrator
 from tools.models import User, TemporaryDirectory
 from tools.models import db  # Import the SQLAlchemy db object
+from tools.models import User, TemporaryDirectory, TemporaryLocation
 from tools.verification_mail import EmailVerificator
 
 dotenv.load_dotenv()
@@ -20,7 +21,9 @@ dotenv.load_dotenv()
 app = flask.Flask(__name__)
 app.config[
     "SQLALCHEMY_DATABASE_URI"
-] = r"sqlite:///C:\Users\Flinn\OneDrive\Dokumente\MusicStore\database.db"
+] = 'sqlite:////workspaces/MusicStore/database.db'
+
+# = r"sqlite:///C:\Users\Flinn\OneDrive\Dokumente\MusicStore\database.db"
 
 
 app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER")
@@ -87,14 +90,21 @@ def upload_file():
 
         # TODO: Add temporary storage for the files. The files should be saved in the right directory on submit in the
         # init song.html form
-        print("Starting tempdir")
-        with TemporaryDirectory(delete=False) as tmpdirpath:
-            print("created temporary directory", tmpdirpath)
+        print('Starting tempdir')
+        with TemporaryDirectory(delete=False) as tmpdir:
+            print("created temporary directory", tmpdir.path)
 
             for file in files.get("file"):
                 if file:
                     filename = secure_filename(file.filename)
-                    file.save(os.path.join(tmpdirpath, filename))
+                    file.save(os.path.join(tmpdir.path, filename))
+                    print('-------')
+                    print(tmpdir.id)
+                    print(type(tmpdir.id))
+                    print(tmpdir.path)
+                    print(type(tmpdir.path))
+                    print('-------')
+                    location = TemporaryLocation(id=tmpdir.id, path=tmpdir.path)
 
         return flask.render_template(
             "init_song.html",
