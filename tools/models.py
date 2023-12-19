@@ -86,10 +86,8 @@ class MusicalPiece(db.Model):
 
 
 class TemporaryLocation(db.Model):
-    id = db.Column(String, primary_key=True, nullable=False)
-    path = db.Column(String, nullable=False)
-
-
+    id = db.Column(String(40), primary_key=True, nullable=False)
+    path = db.Column(String(100), nullable=False)
 # todo: this code still needs to be reviewed. Generated with ai. Could be wrong.
 """ 
 def add_piece(name: str, composer: str, genre: str, files: dict):
@@ -162,8 +160,10 @@ def join_orchestra(user_id: int, group_id: int):
 class TemporaryDirectory:
     def __init__(self, delete: bool = True):
         self.delete = delete
-
         self.folder_name = uuid.uuid4().hex
+
+        self.id = self.folder_name
+
         self.path = f"/tmp/{self.folder_name}"
 
         os.mkdir(path=self.path)
@@ -172,8 +172,9 @@ class TemporaryDirectory:
         shutil.rmtree(self.path)
 
     def __enter__(self):
-        return self.path
+        return self
 
     def __exit__(self, *args, **kwargs):
+        if self.delete:
         if self.delete:
             self.cleanup()
