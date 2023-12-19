@@ -176,5 +176,4 @@ class TemporaryDirectory:
 
     def __exit__(self, *args, **kwargs):
         if self.delete:
-        if self.delete:
             self.cleanup()
