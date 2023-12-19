@@ -80,14 +80,22 @@ class PasswordResetToken(db.Model):
 class MusicalPiece(db.Model):
     id = db.Column(Integer, primary_key=True)
     name = db.Column(String, nullable=False)
-    composer = db.Column(String, nullable=True)
-    genre = db.Column(String, nullable=True)
-    file_path = db.Column(String, nullable=False)
+    file_path = db.Column(String(100), nullable=False)
+    folder_id = db.Column(String(40), nullable=False)
+    instrument = db.Column(String(40), nullable=False)
 
 
 class TemporaryLocation(db.Model):
     id = db.Column(String(40), primary_key=True, nullable=False)
     path = db.Column(String(100), nullable=False)
+
+    def get_filepath(self, filename: str):
+        return os.path.join(self.path, filename)
+
+    def __str__(self):
+        return f"TemporaryLocation with ID: {self.id} \nPath: {self.path}"
+
+
 # todo: this code still needs to be reviewed. Generated with ai. Could be wrong.
 """ 
 def add_piece(name: str, composer: str, genre: str, files: dict):

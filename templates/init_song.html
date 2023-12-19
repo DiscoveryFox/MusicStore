@@ -35,4 +35,29 @@
             </script>
         </label>
     </form>
+
+    <div id="parts_preview">
+        {% for filename in files %}
+            <p>{{ filename }}</p>
+            <script>
+                async function loadPreview(folder_id, part_id) {
+                    const response = await fetch(`/load_preview?folder_id=${folder_id}&part_id=${part_id}`);
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.blob();  // assuming the server returns a Blob object
+                }
+
+                // Usage example:
+                loadPreview({{ stored_id }}, {{ filename }})
+                    .then(blob => {
+                        // Assuming 'img' is an <img> tag already existing in the DOM,
+                        // the following statement would append load Preview to it.
+                        // document.querySelector("img").src = URL.createObjectURL(blob);
+                        console.log(URL.createObjectURL(blob));
+                    })
+                    .catch(e => console.error(e));
+            </script>
+        {% endfor %}
+    </div>
 {% endblock %}

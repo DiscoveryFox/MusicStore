@@ -1,6 +1,8 @@
 import os
+import uuid
 
 import dotenv
+import fitz
 import flask
 import flask_login
 from flask import request, send_file, url_for, flash, redirect
@@ -9,11 +11,9 @@ from flask_login import current_user
 from flask_migrate import Migrate
 from werkzeug.utils import secure_filename
 
-import tools.ai_functionality
 import tools.file_orchestrator
-from tools.models import User, TemporaryDirectory
-from tools.models import db  # Import the SQLAlchemy db object
 from tools.models import User, TemporaryDirectory, TemporaryLocation
+from tools.models import db  # Import the SQLAlchemy db object
 from tools.verification_mail import EmailVerificator
 
 dotenv.load_dotenv()
@@ -21,9 +21,8 @@ dotenv.load_dotenv()
 app = flask.Flask(__name__)
 app.config[
     "SQLALCHEMY_DATABASE_URI"
-] = 'sqlite:////workspaces/MusicStore/database.db'
-
-# = r"sqlite:///C:\Users\Flinn\OneDrive\Dokumente\MusicStore\database.db"
+] = r"sqlite:///C:\Users\Flinn\OneDrive\Dokumente\MusicStore\database.db"
+# = "sqlite:////workspaces/MusicStore/database.db"
 
 
 app.config["MAIL_SERVER"] = os.getenv("MAIL_SERVER")
@@ -47,7 +46,7 @@ bcrypt = Bcrypt(app)
 
 migrate = Migrate(app, db)
 
-orchestrator = tools.file_orchestrator.FileOrchestrator()
+orchestrator = tools.file_orchestrator.FileOrchestrator(database=db)
 
 
 @login_manager.user_loader
@@ -90,43 +89,67 @@ def upload_file():
 
         # TODO: Add temporary storage for the files. The files should be saved in the right directory on submit in the
         # init song.html form
-        print('Starting tempdir')
+        print("Starting tempdir")
         with TemporaryDirectory(delete=False) as tmpdir:
             print("created temporary directory", tmpdir.path)
             print(tmpdir.id)
 
+            location = TemporaryLocation(id=tmpdir.id, path=tmpdir.path)
+            print(location)
+            db.session.add(location)
+            db.session.commit()
+
             for file in files.get("file"):
                 if file:
                     filename = secure_filename(file.filename)
+                    filename = f"{uuid.uuid4()}.{filename}"
                     file.save(os.path.join(tmpdir.path, filename))
-                    print('-------')
+                    print("-------")
                     print(tmpdir.id)
                     print(type(tmpdir.id))
                     print(tmpdir.path)
                     print(type(tmpdir.path))
-                    print('-------')
-                    location = TemporaryLocation(id=tmpdir.id, path=tmpdir.path)
+                    print("-------")
 
+                    if filename.endswith(".pdf"):
+                        for index, page in enumerate(
+                            fitz.open(location.get_filepath(filename))  # noqa
+                        ):
+                            print(location.get_filepath(filename))
+                            print(filename)
+                            pix = page.get_pixmap()
+                            pix.save(
+                                f"{tmpdir.path}/{filename.split('.')[0]}_page_{index}.png"
+                            )
             return flask.render_template(
                 "init_song.html",
                 song_title=song_name,
                 automatic_id=orchestrator.get_automatic_next_id(),
-                stored_id=tmpdir.id
+                stored_id=tmpdir.id,
+                files=orchestrator.render_files_for_flask(tmpdir),
             )
     elif request.method == "GET":
         return flask.render_template(
             "upload_file.html", automatic_id=orchestrator.get_automatic_next_id()
         )
 
-@app.route('/finish_setup', methods=['POST'])
+
+@app.route("/load_preview", methods=["GET"])
+def load_preview():
+    folder_id: str = str(flask.request.args.get("folder_id"))
+    part_id: str = str(flask.request.args.get("part_id"))
+
+    print(f"Requested {part_id} preview from {folder_id}")
+    print(orchestrator.get_filepath(folder_id, part_id, preview=True))
+    return send_file(
+        orchestrator.get_filepath(folder_id, part_id, preview=True),
+        mimetype="image/png",
+    )
+
+
+@app.route("/finish_setup", methods=["POST"])
 def finish_setup():
     data = request.json
-
-@app.route("/piece", methods=["GET"])
-def get_piece():
-    piece_id: int = int(flask.request.args.get("piece_id"))
-    piece_image = orchestrator.get_piece_image(piece_id)
-    return send_file(piece_image, mimetype="image/png")
 
 
 @app.route("/register", methods=["GET", "POST"])
